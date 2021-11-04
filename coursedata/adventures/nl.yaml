@@ -190,6 +190,8 @@ adventures:
                     hijzij is ask 'Ben je een hij of een zij?'
                     print 'Ridder ' naam ' loopt door een bos '
                     print hijzij ' is op zoek naar een schat'
+            11:
+                njgrinjinji
 
     songs:
         name: "Zing een liedje!"
