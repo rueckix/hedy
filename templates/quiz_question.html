@@ -20,15 +20,15 @@
             }
 
 
-            $(document).ready(function () {
+            function submit_answer() {
                 $("form").submit(function (event) {
-                    var formData = {
+                    const formData = {
                         "radioValue": $(this).find('input:radio[name=radio_option]:checked').val() || ''
                     };
-                    console.log("radioValue: ",  JSON.stringify(formData))
+                    console.log("radioValue: ", JSON.stringify(formData))
                     $.ajax({
                         type: 'POST',
-                        url:"/quiz/submit_answer/{{ level_source }}/{{ question_nr }}/{{attempt|int + 1 }}",
+                        url: "/quiz/submit_answer/{{ level_source }}/{{ question_nr }}/{{attempt|int + 1 }}",
                         data: JSON.stringify(formData),
                         contentType: 'application/json',
                         dataType: 'json',
@@ -36,7 +36,7 @@
                         console.log('DATA: ', data)
                     });
                 });
-            });
+            }
 
         </script>
     </head>
@@ -49,7 +49,7 @@
         {% if question.code and question.code!= "..." %}
             <pre><code class="ml-6 text-xl">{{ question.code }}</code></pre>
         {% endif %}
-        <form action='/quiz/submit_answer/{{ level_source }}/{{ question_nr }}/{{ attempt|int + 1 }}' method="POST">
+        <form  onsubmit="event.preventDefault ()">
             <div class="grid gap-1 rounded-t-xl">
                 {% set counter = namespace(value=0) %}
                 {% for row in question.mp_choice_options|batch(2) %}
@@ -67,7 +67,8 @@
                                                 name="radio_option"
                                                 value="{{ question_nr }}-{{ question_options[counter.value].char_index }}"
                                                 class="class form-radio h-12 w-12"
-                                                id = "radio-button">
+                                                id = "radio-button"
+                                                onclick="submit_answer ()">
                                         <span>
 
                                         {% if not question_options[counter.value].option_text or question_options[counter.value].option_text == 'None' %}
@@ -89,7 +90,8 @@
                                                 value="{{ question_nr }}-{{ question_options[counter.value].char_index }}"
                                                 class="class form-radio h-12 w-12"
                                                 id = "radio-button"
-                                                disabled="disabled">
+                                                disabled="disabled"
+                                                onclick="submit_answer ()">
                                         <span>
                                         {% if not question_options[counter.value].option_text or question_options[counter.value].option_text == 'None' %}
                                             <code class="ml-6 text-xl">{{ question_options[counter.value].code  }}</code>
@@ -110,7 +112,8 @@
                                                 name="radio_option"
                                                 value="{{ question_nr }}-{{ question_options[counter.value].char_index }}"
                                                 class="class form-radio h-12 w-12"
-                                                id = "radio-button">
+                                                id = "radio-button"
+                                                onclick="submit_answer ()">
                                         <span>
                                                 {% if not question_options[counter.value].option_text or question_options[counter.value].option_text == 'None' %}
                                                     <code class="ml-6 text-xl">{{ question_options[counter.value].code }}</code>
