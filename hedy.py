@@ -195,23 +195,43 @@ class ExtractAST(Transformer):
 class ExpandAmbiguity(Transformer):
     # creates a list of options
 
+
     def program(self, args):
-        all_programs = []
+
+        # dit hieronder werkt als we _abig commands binnenkrijgen niet als we
+        # gewone arguments krijgen dan meoten we gewoon niks doen en het hoger oplossne
+
+        # command_options is a list of lists, position 1 contains all possible commands for command 1 etc
+        command_options = []
+
         for a in args:
-            if a.data == "OPTIONS":
-                # create a fresh tree with this 1 option
-                return Tree('program', [a])
+            if a.data == "_ambig":
+                command_options.append(a.children)
+            else: #maar 1 optie?
+                command_options.append([a.children]) #maak toch een lijst voor makkelijkere verwerking
+
+        import itertools
+        possible_command_lists = list(itertools.product(*command_options))
+        possible_programs = [Tree('program', x) for x in possible_command_lists]
+
+        return possible_programs
 
 
-    def _ambig(self, args):
+
+    def _ambig(self, args): #heep in the tree to use higher up
+        firstargument = args[0]
+        if isinstance(firstargument, list) and firstargument[0].data == "program":
+        # are we at the root and do we have multiple program options? return all of them
+            return [a[0] for a in args]
+        else:
         # return all options
-         return Tree('OPTIONS', args)
+         return Tree('_ambig', args)
 
-    # def __default__(self, args, children, meta):
-    #     if args == "_ambig":
-    #         return Tree("_ambig", [children])
-    #     else:
-    #         return Tree(args, children)
+    def __default__(self, args, children, meta):
+        if args == "_ambig":
+            return Tree("_ambig", [children])
+        else:
+            return Tree(args, children)
 
 class AllAssignmentCommands(Transformer):
     # returns a list of variable and list access
@@ -1629,7 +1649,6 @@ def transpile_inner(input_string, level):
     try:
         parser_output = parser.parse(input_string+ '\n').children[0]  # getting rid of the root could also be done in the transformer would be nicer
         programs = ExpandAmbiguity().transform(parser_output)
-
 
         program_root = programs[0]
 
