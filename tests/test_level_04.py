@@ -314,3 +314,22 @@ class TestsLevel4(HedyTester):
   #     if নাম is হেডি print 'ভালো!' else print 'মন্দ'\"""")
   #
   #
+
+
+  def test_if_with_two_words(self):
+    code = textwrap.dedent("""\
+    kleur is ask Wat is je lievelingskleur?
+    if kleur is groene kleur print 'mooi!'""")
+
+    expected = textwrap.dedent("""\
+    jouwkeuze = 'schaar'
+    computerkeuze = 'schaar'
+    if computerkeuze == jouwkeuze:
+      print(f'gelijkspel!')""")
+
+    result = hedy.transpile(code, self.level)
+
+    self.assertEqual(expected, result.code)
+    self.assertEqual(False, result.has_turtle)
+
+
