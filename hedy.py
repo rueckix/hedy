@@ -194,14 +194,24 @@ class ExtractAST(Transformer):
 
 class ExpandAmbiguity(Transformer):
     # creates a list of options
+
     def program(self, args):
-        return [Tree('program', [a]) for a in args[0]]
+        all_programs = []
+        for a in args:
+            if a.data == "OPTIONS":
+                # create a fresh tree with this 1 option
+                return Tree('program', [a])
 
 
     def _ambig(self, args):
         # return all options
-        return args
+         return Tree('OPTIONS', args)
 
+    # def __default__(self, args, children, meta):
+    #     if args == "_ambig":
+    #         return Tree("_ambig", [children])
+    #     else:
+    #         return Tree(args, children)
 
 class AllAssignmentCommands(Transformer):
     # returns a list of variable and list access
@@ -1617,12 +1627,13 @@ def transpile_inner(input_string, level):
         input_string = preprocess_blocks(input_string, level)
 
     try:
-        program_root = parser.parse(input_string+ '\n').children[0]  # getting rid of the root could also be done in the transformer would be nicer
-        abstract_syntaxtrees = ExtractAST().transform(program_root)
+        parser_output = parser.parse(input_string+ '\n').children[0]  # getting rid of the root could also be done in the transformer would be nicer
+        programs = ExpandAmbiguity().transform(parser_output)
 
-        all_trees = ExpandAmbiguity().transform(abstract_syntaxtrees)
 
-        abstract_syntaxtree = all_trees[0]
+        program_root = programs[0]
+
+        abstract_syntaxtree = ExtractAST().transform(program_root)
 
         lookup_table = AllAssignmentCommands().transform(abstract_syntaxtree)
 
