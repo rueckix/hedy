@@ -197,32 +197,31 @@ class ExpandAmbiguity(Transformer):
 
 
     def program(self, args):
+        firstargument = args[0]
+        if isinstance(firstargument, Tree) and firstargument.data == "_ambig":
+            # command_options is a list of lists, position 1 contains all possible commands for command 1 etc
+            command_options = []
 
-        # dit hieronder werkt als we _abig commands binnenkrijgen niet als we
-        # gewone arguments krijgen dan meoten we gewoon niks doen en het hoger oplossne
+            for a in args:
+                if a.data == "_ambig":
+                    command_options.append(a.children)
+                else: #maar 1 optie?
+                    command_options.append([a.children]) #maak toch een lijst voor makkelijkere verwerking
 
-        # command_options is a list of lists, position 1 contains all possible commands for command 1 etc
-        command_options = []
+            import itertools
+            possible_command_lists = list(itertools.product(*command_options))
+            possible_programs = [Tree('program', x) for x in possible_command_lists]
 
-        for a in args:
-            if a.data == "_ambig":
-                command_options.append(a.children)
-            else: #maar 1 optie?
-                command_options.append([a.children]) #maak toch een lijst voor makkelijkere verwerking
-
-        import itertools
-        possible_command_lists = list(itertools.product(*command_options))
-        possible_programs = [Tree('program', x) for x in possible_command_lists]
-
-        return possible_programs
-
+            return possible_programs
+        else:
+            return Tree('program', args)
 
 
     def _ambig(self, args): #heep in the tree to use higher up
         firstargument = args[0]
-        if isinstance(firstargument, list) and firstargument[0].data == "program":
+        if isinstance(firstargument, Tree) and firstargument.data == "program":
         # are we at the root and do we have multiple program options? return all of them
-            return [a[0] for a in args]
+            return args
         else:
         # return all options
          return Tree('_ambig', args)
