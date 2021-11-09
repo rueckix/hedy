@@ -318,14 +318,13 @@ class TestsLevel4(HedyTester):
 
   def test_if_with_two_words(self):
     code = textwrap.dedent("""\
-    kleur is ask Wat is je lievelingskleur?
+    kleur is ask 'Wat is je lievelingskleur?'
     if kleur is groene kleur print 'mooi!'""")
 
     expected = textwrap.dedent("""\
-    jouwkeuze = 'schaar'
-    computerkeuze = 'schaar'
-    if computerkeuze == jouwkeuze:
-      print(f'gelijkspel!')""")
+    kleur = input('Wat is je lievelingskleur?')
+    if kleur == 'groene kleur':
+      print(f'mooi!')""")
 
     result = hedy.transpile(code, self.level)
 

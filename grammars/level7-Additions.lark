@@ -6,3 +6,4 @@ repeat: _REPEAT _SPACE (INT | var) _SPACE _TIMES _EOL (_SPACE command) (_EOL _SP
 elses: _EOL (_SPACE)* _ELSE (_SPACE)* _EOL (_SPACE command) (_EOL _SPACE command)* _EOL _END_BLOCK
 //'if' cannot be used in Python, hence the name of the rule is 'ifs'
 ifs: _IF _SPACE condition _EOL (_SPACE command) (_EOL _SPACE command)* _EOL _END_BLOCK
+

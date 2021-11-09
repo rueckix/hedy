@@ -192,6 +192,17 @@ class ExtractAST(Transformer):
     def number(self, args):
         return Tree('number', ''.join([str(c) for c in args]))
 
+class ExpandAmbiguity(Transformer):
+    # creates a list of options
+    def program(self, args):
+        return [Tree('program', a) for a in args[0]]
+
+
+    def _ambig(self, args):
+        # return all options
+        return args
+
+
 class AllAssignmentCommands(Transformer):
     # returns a list of variable and list access
     # so these can be excluded when printing
@@ -1420,7 +1431,7 @@ def get_parser(level):
     if existing and not utils.is_debug_mode():
         return existing
     grammar = create_grammar(level)
-    ret = Lark(grammar, regex=True)
+    ret = Lark(grammar, regex=True, ambiguity='explicit')
     PARSER_CACHE[key] = ret
     return ret
 
@@ -1607,7 +1618,12 @@ def transpile_inner(input_string, level):
 
     try:
         program_root = parser.parse(input_string+ '\n').children[0]  # getting rid of the root could also be done in the transformer would be nicer
-        abstract_syntaxtree = ExtractAST().transform(program_root)
+        abstract_syntaxtrees = ExtractAST().transform(program_root)
+
+        all_trees = ExpandAmbiguity().transform(abstract_syntaxtrees)
+
+        abstract_syntaxtree = all_trees[0]
+
         lookup_table = AllAssignmentCommands().transform(abstract_syntaxtree)
 
         # also add hashes to list
@@ -1628,6 +1644,8 @@ def transpile_inner(input_string, level):
         except UnexpectedEOF:
             # this one can't be beautified (for now), so give up :)
             raise e
+    except Exception as e:
+        raise e
 
     # IsValid returns (True,) or (False, args, line)
     is_valid = IsValid().transform(program_root)

@@ -13,11 +13,12 @@ ifelse: _IF _SPACE condition _SPACE command _SPACE* (_SPACE|_EOL*) _ELSE _SPACE 
 ifs: _IF _SPACE condition (_SPACE|_EOL*) command //'if' cannot be used in Python, hence the name of the rule is 'ifs'
 condition: (equality_check|in_list_check) (_SPACE _AND _SPACE condition)*
 list_access_var: var _SPACE _IS _SPACE var _SPACE _AT _SPACE (index | random)
-equality_check: textwithoutspaces _SPACE _IS _SPACE textwithoutspaces
+equality_check: textwithoutspaces _SPACE _IS _SPACE textwithspaces
 in_list_check: textwithoutspaces _SPACE _IN _SPACE var
 
-textwithspaces: /(?:[^\n, ]| (?!else))+/ -> text //anything can be parsed except for a newline and a comma for list separators
+textwithspaces: /(?:[^\n, ]| (?!else)(?!print)(?!is))+/ -> text //anything can be parsed except for a newline and a comma for list separators
 //a space is allowed, of course but it may not be followed by an else. The part " (?!else))" means space not followed by (negative look ahead) else
+// same from print to allow for conditional with a space in them like: if kleur is groene kleur print 'mooi!
 //That is because allowing else in strings leads to issue #303
 textwithoutspaces: /([^\n, ]+)/ -> text //anything can be parsed except for spaces (plus: a newline and a comma for list separators)
 
