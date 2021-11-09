@@ -195,7 +195,7 @@ class ExtractAST(Transformer):
 class ExpandAmbiguity(Transformer):
     # creates a list of options
     def program(self, args):
-        return [Tree('program', a) for a in args[0]]
+        return [Tree('program', [a]) for a in args[0]]
 
 
     def _ambig(self, args):
