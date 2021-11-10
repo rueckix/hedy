@@ -192,45 +192,108 @@ class ExtractAST(Transformer):
     def number(self, args):
         return Tree('number', ''.join([str(c) for c in args]))
 
+class HasAmbiguity(Transformer):
+    def _ambig(self, args): #heep in the tree to use higher up
+        return True
+
+    def __default__(self, args, children, meta):
+        if any(children):
+            return True
+        else:
+            return False
+
+    # somehow tokens are not picked up by the default rule so they need their own rule
+    def text(self, args):
+        return False
+
+    def INT(self, args):
+        return False
+
+    def NAME(self, args):
+        return False
+
+    def NUMBER(self, args):
+        return False
+
+    def DIGIT(self, args):
+        return False
+
+    def PUNCTUATION(self, args):
+        return False
+
 class ExpandAmbiguity(Transformer):
     # creates a list of options
 
+    def start(self, args):
+        # args is always a list of 1 program (is no ambig) or a list of multiple if ambig
+        # kan waarschijnlijk weer simpeler!!
+        node = Tree('start', args)
+        options = []
+        ambiguous_children = HasAmbiguity().transform(node)
+        if ambiguous_children:
+            for a in args:
+                if isinstance(a, Tree) and a.data == "_ambig":
+                    options += a.children
+                else:
+                    options += a
+            return options
+        else:
+            return args
 
-    def program(self, args):
-        firstargument = args[0]
-        if isinstance(firstargument, Tree) and firstargument.data == "_ambig":
-            # command_options is a list of lists, position 1 contains all possible commands for command 1 etc
+    def _ambig(self, args): #heep in the tree to use higher up
+        # een ambig kan zelf ook weer ambig kids hebben
+        node = Tree('New', args)
+        ambiguous_children = HasAmbiguity().transform(node)
+        if ambiguous_children:
+            # do I have ambiguous children?
+            # let me take over their load!
+
             command_options = []
 
             for a in args:
-                if a.data == "_ambig":
+                if isinstance(a, Tree) and a.data == "_ambig":
                     command_options.append(a.children)
-                else: #maar 1 optie?
-                    command_options.append([a.children]) #maak toch een lijst voor makkelijkere verwerking
-
+                else:  # maar 1 optie?
+                    command_options.append([a])  # maak toch een lijst voor makkelijkere verwerking
             import itertools
-            possible_command_lists = list(itertools.product(*command_options))
-            possible_programs = [Tree('program', x) for x in possible_command_lists]
 
-            return possible_programs
+            possible_command_lists = [list(x) for x in (itertools.product(*command_options))]
+            #flatten hier?
+            return Tree('_ambig', possible_command_lists)
+
         else:
-            return Tree('program', args)
+            node = Tree('_ambig', args)
+            return node
 
-
-    def _ambig(self, args): #heep in the tree to use higher up
-        firstargument = args[0]
-        if isinstance(firstargument, Tree) and firstargument.data == "program":
-        # are we at the root and do we have multiple program options? return all of them
-            return args
-        else:
-        # return all options
-         return Tree('_ambig', args)
 
     def __default__(self, args, children, meta):
-        if args == "_ambig":
-            return Tree("_ambig", [children])
+        node = Tree(args, children)
+        ambiguous_children = HasAmbiguity().transform(node)
+        if ambiguous_children:
+            # do I have ambiguous children?
+            # let me take over their load!
+
+            command_options = []
+
+            for a in children:
+                if isinstance(a, Tree) and a.data == "_ambig":
+                    command_options.append(a.children)
+                else: #maar 1 optie?
+                    command_options.append([a]) #maak toch een lijst voor makkelijkere verwerking
+            import itertools
+
+            possible_command_lists = [list(x) for x in (itertools.product(*command_options))]
+            possible_programs = [Tree(args, x) for x in possible_command_lists]
+            return Tree("_ambig", possible_programs)
+
         else:
-            return Tree(args, children)
+            return node
+
+
+            # for a in children:
+            #     if isinstance(a, Tree) and a.data == "_ambig":
+            #         return Tree("_ambig", Tree(args, a.children))
+            # return Tree(args, children)
 
 class AllAssignmentCommands(Transformer):
     # returns a list of variable and list access
@@ -1646,7 +1709,7 @@ def transpile_inner(input_string, level):
         input_string = preprocess_blocks(input_string, level)
 
     try:
-        parser_output = parser.parse(input_string+ '\n').children[0]  # getting rid of the root could also be done in the transformer would be nicer
+        parser_output = parser.parse(input_string + '\n')  # getting rid of the root could also be done in the transformer would be nicer
         programs = ExpandAmbiguity().transform(parser_output)
 
         program_root = programs[0]

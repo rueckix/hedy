@@ -411,7 +411,6 @@ class TestsLevel2(HedyTester):
     self.assertEqual(False, result.has_turtle)
   def test_print_list_var(self):
     code = textwrap.dedent("""\
-    dieren is Hond, Kat, Kangoeroe
     print dieren at 1""")
 
     result = hedy.transpile(code, self.level)
