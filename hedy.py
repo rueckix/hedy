@@ -12,6 +12,7 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 import exceptions
+import copy
 
 # Some useful constants
 HEDY_MAX_LEVEL = 14
@@ -224,76 +225,86 @@ class HasAmbiguity(Transformer):
 class ExpandAmbiguity(Transformer):
     # creates a list of options
 
+    def text(self, args):
+        return Tree ('text', ''.join([c for c in args]))
+
     def start(self, args):
-        # args is always a list of 1 program (is no ambig) or a list of multiple if ambig
-        # kan waarschijnlijk weer simpeler!!
-        node = Tree('start', args)
-        options = []
-        ambiguous_children = HasAmbiguity().transform(node)
+        return Tree('start', args)
+
+    def start(self, args):
+        possible_programs = [Tree("program", x) for x in args]
+        return possible_programs
+
+    def CommandOptions(self, args):
+        return True
+
+    def program(self, args):
+        # a program is a list of potential programs wrapped in _ambig or a list of commands
+        new_args = [[]]
+
+        for c in args:
+            if c.data != "_ambig":
+                for n in new_args:
+                    n.append(c)
+            else:
+                # voor ieder kind in de ambig moeten we een nieuwe lijst maken
+                new_new_args = []
+
+                for n in new_args:
+                    for x in c.children:
+                        new = n + [x]
+                        new_new_args.append(new)
+                new_args = new_new_args
+
+        possible_programs = [Tree("program", x) for x in new_args]
+        return Tree("programs", possible_programs)
+
+
+    def _ambig(self, args):
+        # ambiguous_children = HasAmbiguity().transform(Tree("New", args))
+        # if ambiguous_children:
+        #     if args[0].data == "command":
+        #         return "lala"
+        #     else:
+        #         return Tree("_ambig", args)
+        # else:
+        return Tree("_ambig", args)
+
+
+    def command(self, args):
+        node = Tree("command", args)
+        ambiguous_children = HasAmbiguity().transform(Tree("New", args))
         if ambiguous_children:
-            for a in args:
-                if isinstance(a, Tree) and a.data == "_ambig":
-                    options += a.children
+            # do I have ambiguous children?
+            # let me take over their load!
+
+            new_args = [[]]
+
+            for c in args:
+                if c.data != "_ambig":
+                    for n in new_args:
+                        n.append(c)
                 else:
-                    options += a
-            return options
-        else:
-            return args
+                    # voor ieder kind in de ambig moeten we een nieuwe lijst maken
+                    new_new_args = []
 
-    def _ambig(self, args): #heep in the tree to use higher up
-        # een ambig kan zelf ook weer ambig kids hebben
-        node = Tree('New', args)
-        ambiguous_children = HasAmbiguity().transform(node)
-        if ambiguous_children:
-            # do I have ambiguous children?
-            # let me take over their load!
+                    for n in new_args:
+                        for x in c.children:
+                            new = n + [x]
+                            new_new_args.append(new)
+                    new_args = new_new_args
 
-            command_options = []
-
-            for a in args:
-                if isinstance(a, Tree) and a.data == "_ambig":
-                    command_options.append(a.children)
-                else:  # maar 1 optie?
-                    command_options.append([a])  # maak toch een lijst voor makkelijkere verwerking
-            import itertools
-
-            possible_command_lists = [list(x) for x in (itertools.product(*command_options))]
-            #flatten hier?
-            return Tree('_ambig', possible_command_lists)
-
-        else:
-            node = Tree('_ambig', args)
-            return node
-
-
-    def __default__(self, args, children, meta):
-        node = Tree(args, children)
-        ambiguous_children = HasAmbiguity().transform(node)
-        if ambiguous_children:
-            # do I have ambiguous children?
-            # let me take over their load!
-
-            command_options = []
-
-            for a in children:
-                if isinstance(a, Tree) and a.data == "_ambig":
-                    command_options.append(a.children)
-                else: #maar 1 optie?
-                    command_options.append([a]) #maak toch een lijst voor makkelijkere verwerking
-            import itertools
-
-            possible_command_lists = [list(x) for x in (itertools.product(*command_options))]
-            possible_programs = [Tree(args, x) for x in possible_command_lists]
-            return Tree("_ambig", possible_programs)
+            possible_commands = [Tree("command", x) for x in new_args]
+            return Tree("CommandOptions", possible_commands)
 
         else:
             return node
 
 
-            # for a in children:
-            #     if isinstance(a, Tree) and a.data == "_ambig":
-            #         return Tree("_ambig", Tree(args, a.children))
-            # return Tree(args, children)
+    #         # for a in children:
+    #         #     if isinstance(a, Tree) and a.data == "_ambig":
+    #         #         return Tree("_ambig", Tree(args, a.children))
+    #         # return Tree(args, children)
 
 class AllAssignmentCommands(Transformer):
     # returns a list of variable and list access
@@ -1708,102 +1719,116 @@ def transpile_inner(input_string, level):
     if level >= 7:
         input_string = preprocess_blocks(input_string, level)
 
-    try:
-        parser_output = parser.parse(input_string + '\n')  # getting rid of the root could also be done in the transformer would be nicer
-        programs = ExpandAmbiguity().transform(parser_output)
+    parser_output = parser.parse(input_string + '\n')  # getting rid of the root could also be done in the transformer would be nicer
 
-        program_root = programs[0]
+    # parser_output = Tree('program', [Tree("_ambig", [Tree("_ambig", [Tree('A', []), Tree('B', [])]), Tree('C', [])]), Tree('D', [])])
 
-        abstract_syntaxtree = ExtractAST().transform(program_root)
 
-        lookup_table = AllAssignmentCommands().transform(abstract_syntaxtree)
 
-        # also add hashes to list
-        # note that we do not (and cannot) hash the var names only, we also need to be able to process
-        # random.choice(প্রাণী)
-        hashed_lookups = AllAssignmentCommandsHashed().transform(abstract_syntaxtree)
+    programs = ExpandAmbiguity().transform(parser_output)
 
-        lookup_table += hashed_lookups
 
-    except UnexpectedCharacters as e:
+    valid_programs = [p for p in programs if IsValid().transform(p)]
+
+    number = 0
+    for program_root in valid_programs:
+        print(f"option {number} tried")
+        number += 1
         try:
-            location = e.line, e.column
-            characters_expected = str(e.allowed) #not yet in use, could be used in the future (when our parser rules are better organize, now it says ANON*__12 etc way too often!)
-            character_found  = beautify_parse_error(e.char)
-            # print(e.args[0])
-            # print(location, character_found, characters_expected)
-            raise exceptions.ParseException(level=level, location=location, found=character_found) from e
-        except UnexpectedEOF:
-            # this one can't be beautified (for now), so give up :)
-            raise e
-    except Exception as e:
-        raise e
+            abstract_syntaxtree = ExtractAST().transform(program_root)
+            lookup_table = AllAssignmentCommands().transform(abstract_syntaxtree)
 
-    # IsValid returns (True,) or (False, args, line)
-    is_valid = IsValid().transform(program_root)
+            # also add hashes to list
+            # note that we do not (and cannot) hash the var names only, we also need to be able to process
+            # random.choice(প্রাণী)
+            hashed_lookups = AllAssignmentCommandsHashed().transform(abstract_syntaxtree)
 
-    if not is_valid[0]:
-        _, invalid_info, line = is_valid
+            lookup_table += hashed_lookups
 
-        # Apparently, sometimes 'args' is a string, sometimes it's a list of
-        # strings ( are these production rule names?). If it's a list of
-        # strings, just take the first string and proceed.
-        if isinstance(invalid_info, list):
-            invalid_info = invalid_info[0]
-        if invalid_info.error_type == ' ':
-            #the error here is a space at the beginning of a line, we can fix that!
-            fixed_code = repair(input_string)
-            if fixed_code != input_string: #only if we have made a successful fix
-                result = transpile_inner(fixed_code, level)
-            raise exceptions.InvalidSpaceException(level=level, line_number=line, fixed_code=fixed_code, fixed_result=result)
-        elif invalid_info.error_type == 'print without quotes':
-            # grammar rule is agnostic of line number so we can't easily return that here
-            raise exceptions.UnquotedTextException(level=level)
-        elif invalid_info.error_type == 'empty program':
-            raise exceptions.EmptyProgramException()
-        elif invalid_info.error_type == 'unsupported number':
-            raise exceptions.UnsupportedFloatException(value=''.join(invalid_info.arguments))
-        else:
-            invalid_command = invalid_info.command
-            closest = closest_command(invalid_command, commands_per_level[level])
-            if closest == None: #we couldn't find a suggestion because the command itself was found
-                # making the error super-specific for the turn command for now
-                # is it possible to have a generic and meaningful syntax error message for different commands?
-                if invalid_command == 'turn':
-                    raise hedy.exceptions.InvalidArgumentTypeException(command=invalid_info.command, invalid_type='',
-                                                            allowed_types=['right', 'left', 'number'],
-                                                            invalid_argument=''.join(invalid_info.arguments))
-                # clearly the error message here should be better or it should be a different one!
-                raise exceptions.ParseException(level=level, location=["?", "?"], found=invalid_command)
-            raise exceptions.InvalidCommandException(invalid_command=invalid_command, level=level, guessed_command=closest, line_number=line)
+            # except UnexpectedCharacters as e:
+            #     try:
+            #         location = e.line, e.column
+            #         characters_expected = str(e.allowed) #not yet in use, could be used in the future (when our parser rules are better organize, now it says ANON*__12 etc way too often!)
+            #         character_found  = beautify_parse_error(e.char)
+            #         # print(e.args[0])
+            #         # print(location, character_found, characters_expected)
+            #         raise exceptions.ParseException(level=level, location=location, found=character_found) from e
+            #     except UnexpectedEOF:
+            #         # this one can't be beautified (for now), so give up :)
+            #         raise e
+            # except Exception as e:
+            #     raise e
 
-    is_complete = IsComplete(level).transform(program_root)
-    if not is_complete[0]:
-        incomplete_command = is_complete[1][0]
-        line = is_complete[2]
-        raise exceptions.IncompleteCommandException(incomplete_command=incomplete_command, level=level, line_number=line)
+            # IsValid returns (True,) or (False, args, line)
+            is_valid = IsValid().transform(program_root)
 
-    if not valid_echo(program_root):
-        raise exceptions.LonelyEchoException()
+            if not is_valid[0]:
+                _, invalid_info, line = is_valid
 
-    try:
-        if level <= HEDY_MAX_LEVEL:
-            #grab the right transpiler from the lookup
-            transpiler = TRANSPILER_LOOKUP[level]
-            python = transpiler(punctuation_symbols, lookup_table).transform(abstract_syntaxtree)
-        else:
-           raise Exception(f'Levels over {HEDY_MAX_LEVEL} not implemented yet')
-    except visitors.VisitError as E:
-        # Exceptions raised inside visitors are wrapped inside VisitError. Unwrap it if it is a
-        # HedyException to show the intended error message.
-        if isinstance(E.orig_exc, exceptions.HedyException):
-            raise E.orig_exc
-        else:
-            raise E
+                # Apparently, sometimes 'args' is a string, sometimes it's a list of
+                # strings ( are these production rule names?). If it's a list of
+                # strings, just take the first string and proceed.
+                if isinstance(invalid_info, list):
+                    invalid_info = invalid_info[0]
+                if invalid_info.error_type == ' ':
+                    #the error here is a space at the beginning of a line, we can fix that!
+                    fixed_code = repair(input_string)
+                    if fixed_code != input_string: #only if we have made a successful fix
+                        result = transpile_inner(fixed_code, level)
+                    raise exceptions.InvalidSpaceException(level=level, line_number=line, fixed_code=fixed_code, fixed_result=result)
+                elif invalid_info.error_type == 'print without quotes':
+                    # grammar rule is agnostic of line number so we can't easily return that here
+                    raise exceptions.UnquotedTextException(level=level)
+                elif invalid_info.error_type == 'empty program':
+                    raise exceptions.EmptyProgramException()
+                elif invalid_info.error_type == 'unsupported number':
+                    raise exceptions.UnsupportedFloatException(value=''.join(invalid_info.arguments))
+                else:
+                    invalid_command = invalid_info.command
+                    closest = closest_command(invalid_command, commands_per_level[level])
+                    if closest == None: #we couldn't find a suggestion because the command itself was found
+                        # making the error super-specific for the turn command for now
+                        # is it possible to have a generic and meaningful syntax error message for different commands?
+                        if invalid_command == 'turn':
+                            raise hedy.exceptions.InvalidArgumentTypeException(command=invalid_info.command, invalid_type='',
+                                                                    allowed_types=['right', 'left', 'number'],
+                                                                    invalid_argument=''.join(invalid_info.arguments))
+                        # clearly the error message here should be better or it should be a different one!
+                        raise exceptions.ParseException(level=level, location=["?", "?"], found=invalid_command)
+                    raise exceptions.InvalidCommandException(invalid_command=invalid_command, level=level, guessed_command=closest, line_number=line)
 
-    has_turtle = UsesTurtle().transform(program_root)
+            is_complete = IsComplete(level).transform(program_root)
+            if not is_complete[0]:
+                incomplete_command = is_complete[1][0]
+                line = is_complete[2]
+                raise exceptions.IncompleteCommandException(incomplete_command=incomplete_command, level=level, line_number=line)
 
-    return ParseResult(python, has_turtle)
+            if not valid_echo(program_root):
+                raise exceptions.LonelyEchoException()
+
+            try:
+                if level <= HEDY_MAX_LEVEL:
+                    #grab the right transpiler from the lookup
+                    transpiler = TRANSPILER_LOOKUP[level]
+                    python = transpiler(punctuation_symbols, lookup_table).transform(abstract_syntaxtree)
+                else:
+                   raise Exception(f'Levels over {HEDY_MAX_LEVEL} not implemented yet')
+            except visitors.VisitError as E:
+                # Exceptions raised inside visitors are wrapped inside VisitError. Unwrap it if it is a
+                # HedyException to show the intended error message.
+                if isinstance(E.orig_exc, exceptions.HedyException):
+                    raise E.orig_exc
+                else:
+                    raise E
+
+            has_turtle = UsesTurtle().transform(program_root)
+
+            return ParseResult(python, has_turtle)
+        # probeer de volgende maar!
+        except:
+            continue
+    # GEEN OPTIE succesvol?
+    return "Help!"
 
 def execute(input_string, level):
     python = transpile(input_string, level)

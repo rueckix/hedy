@@ -211,6 +211,10 @@ class TestsLevel2(HedyTester):
       állatok is kutya, macska, kenguru
       print állatok at random""")
 
+    # code = textwrap.dedent("""\
+    #   állatok is kutya, macska, kenguru
+    #   print állatok at random""")
+
     result = hedy.transpile(code, self.level)
   def test_ask_with_comma(self):
     code = textwrap.dedent("""\
