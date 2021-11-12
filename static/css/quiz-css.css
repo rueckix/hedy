@@ -67,3 +67,6 @@ input:disabled{
     width: 100%
 }
 
+.tw-border-3{
+    border-width: 3px;
+}

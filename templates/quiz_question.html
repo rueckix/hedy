@@ -23,7 +23,7 @@
     </head>
     <body>
     <div>
-        <div class="text-green-900 text-2xl text-center flex flex-row justify-center font-slab"><p
+        <div class="mt-1 bg-blue-200 text-green-700 text-2xl text-center flex flex-row justify-center font-slab"><p
                 class="font-semibold">Vraag {{ question_nr }}</p>
             <p> / {{ questions|length }} - Poging {{ attempt }} </p></div>
         <p class="italic text-3xl font-bold tracking-wide text-blue-900 text-center font-slab"> {{ question.question_text }} </p>
@@ -31,14 +31,14 @@
             <pre><code class="ml-6 text-xl">{{ question.code }}</code></pre>
         {% endif %}
         <form action="{{ url_for('submit_answer', level_source=level_source, question_nr=question_nr, attempt=attempt) }}" method="POST">
-            <div class="grid gap-1 rounded-t-xl">
+            <div>
                 {% set counter = namespace(value=0) %}
                 {% for row in question.mp_choice_options|batch(2) %}
                     <div class="flex flex-row">
                     {% for column in row %}
                         <div class="flex flex-col">
                             {% if question.correct_answer in chosen_option %}
-                                <div class="p-1 border-blue-600 border-4 rounded-lg shadow-lg radio-block"
+                                <div class="p-1 border-blue-600 tw-border-3 rounded shadow-lg radio-block"
                                      id={{ question_options[counter.value].char_index }}>
                                     <label class="inline-flex items-center"><p
                                             class="text-4xl font-bold ml-6 mr-6 font-slab">
@@ -58,7 +58,7 @@
                                     </label>
                                 </div>
                             {% elif question_options[counter.value].char_index in chosen_option %}
-                                <div class="p-1 border-blue-600 border-4 rounded-lg shadow-lg" radio-block
+                                <div class="p-1 border-blue-600 tw-border-3 rounded shadow-lg" radio-block
                                      id="answer-disabled-{{ question_options[counter.value].char_index }}">
                                     <label class="inline-flex items-center"><p
                                             class="text-4xl font-bold ml-6 mr-6 font-slab">
@@ -78,7 +78,7 @@
                                     </label>
                                 </div>
                             {% else %}
-                                <div class="p-1 border-blue-600 border-4 rounded-lg shadow-lg radio-block"
+                                <div class="p-1 border-blue-600 tw-border-3 rounded shadow-lg radio-block"
                                      id={{ question_options[counter.value].char_index }}>
                                     <label class="inline-flex items-center"><p
                                             class="text-4xl font-bold ml-6 mr-6 font-slab">
@@ -104,7 +104,7 @@
                        </div>
                 {% endfor %}
                 </div>
-                <div class="p-10 button-bar border-t-8 border-green-600">
+                <div class="p-10 button-bar border-green-600">
                     <div class="invisible" id="hidden-hint"> {{ question.hint }}</div>
                     <div>
                         <button type="button" onclick="changeHint()"
