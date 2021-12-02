@@ -23,7 +23,8 @@ def translate_keywords(input_string, from_lang="en", to_lang="nl", level=1):
     punctuation_symbols = ['!', '?', '.']
 
     keywordDict = keywords_to_dict(to_lang)
-    input_string = hedy.preprocess_blocks(input_string, level)
+    if level > 2:
+        input_string = hedy.preprocess_blocks(input_string, level)
     program_root = parser.parse(input_string + '\n').children[0]
 
     abstract_syntaxtree = hedy.ExtractAST().transform(program_root)
@@ -241,5 +242,6 @@ class ConvertToLang7(ConvertToLang7):
 
         return self.keywords["repeat"] + " " + args[0] + " " + self.keywords["times"] + indent(args[1:])
 
-
+    def end_block(self):
+        pass
 
