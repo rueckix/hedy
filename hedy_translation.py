@@ -16,15 +16,15 @@ def keywords_to_dict(to_lang="nl"):
 
     return command_combinations
 
-def translate_keywords(input_string, from_lang="en", to_lang="nl", level=1):
+def translate_keywords(input_string, from_lang="nl", to_lang="en", level=1):
     """"Return code with keywords translated to language of choice in level of choice"""
     parser = hedy.get_parser(level, from_lang)
 
     punctuation_symbols = ['!', '?', '.']
 
     keywordDict = keywords_to_dict(to_lang)
-    if level > 2:
-        input_string = hedy.preprocess_blocks(input_string, level)
+
+    input_string = hedy.preprocess_blocks(input_string, level)
     program_root = parser.parse(input_string + '\n').children[0]
 
     abstract_syntaxtree = hedy.ExtractAST().transform(program_root)
@@ -43,7 +43,7 @@ def hedy_translator(level):
     return decorating
 
 def indent(s):
-    newIndent = []
+    newIndent = ""
     for line in s:
         lines = line.split('\n')
         newIndent += ''.join(['\n    ' + l for l in lines])
@@ -245,3 +245,4 @@ class ConvertToLang7(ConvertToLang7):
     def end_block(self):
         pass
 
+translate_keywords("herhaal 3 keer\n    print 'Hedy is fun!'",level =8)
