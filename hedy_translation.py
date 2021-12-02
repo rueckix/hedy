@@ -16,14 +16,16 @@ def keywords_to_dict(to_lang="nl"):
 
     return command_combinations
 
-def translate_keywords(input_string, from_lang="nl", to_lang="nl", level=1):
+def translate_keywords(input_string, from_lang="en", to_lang="nl", level=1):
     """"Return code with keywords translated to language of choice in level of choice"""
     parser = hedy.get_parser(level, from_lang)
 
     punctuation_symbols = ['!', '?', '.']
 
     keywordDict = keywords_to_dict(to_lang)
+    input_string = hedy.preprocess_blocks(input_string, level)
     program_root = parser.parse(input_string + '\n').children[0]
+
     abstract_syntaxtree = hedy.ExtractAST().transform(program_root)
     translator = TRANSPILER_LOOKUP[level]
     abstract_syntaxtree = translator(keywordDict, punctuation_symbols).transform(program_root)
@@ -39,7 +41,12 @@ def hedy_translator(level):
 
     return decorating
 
-
+def indent(s):
+    newIndent = []
+    for line in s:
+        lines = line.split('\n')
+        newIndent += ''.join(['\n    ' + l for l in lines])
+    return newIndent
 @hedy_translator(level=1)
 class ConvertToLang1(Transformer):
 
@@ -227,3 +234,12 @@ class ConvertToLang6(ConvertToLang5):
 class ConvertToLang7(ConvertToLang6):
     def repeat(self, args):
         return self.keywords["repeat"] + " " + args[0] + " " + self.keywords["times"] + " " + args[1]
+
+@hedy_translator(level=8)
+class ConvertToLang7(ConvertToLang7):
+    def repeat(self, args):
+
+        return self.keywords["repeat"] + " " + args[0] + " " + self.keywords["times"] + indent(args[1:])
+
+
+
