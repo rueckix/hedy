@@ -189,3 +189,63 @@ class ConvertToLang5(ConvertToLang4):
 
     def in_list_check(self, args):
         return args[0] + " " + self.keywords["in"] + " " + ''.join([str(c) for c in args[1:]]) + " "
+
+
+@hedy_translator(level=6)
+class ConvertToLang6(ConvertToLang5):
+
+    def addition(self, args):
+        return args[0] + " + " + args[1]
+
+    def substraction(self, args):
+        return args[0] + " - " + args[1]
+
+    def multiplication(self, args):
+        return args[0] + " * " + args[1]
+
+    def division(self, args):
+        return args[0] + " / " + args[1]
+
+
+@hedy_translator(level=7)
+class ConvertToLang7(ConvertToLang6):
+    def repeat(self, args):
+        return self.keywords["repeat"] + " " + args[0] + " " + self.keywords["times"] + " " + args[1]
+
+
+@hedy_translator(level=8)
+class ConvertToLang8(ConvertToLang7):
+    def repeat(self, args):
+        return self.keywords["repeat"] + " " + args[0] + " " + self.keywords["times"] + indent(args[1:])
+
+    def ifs(self, args):
+        return self.keywords["if"] + " " + args[0] + indent(args[1:])
+
+    def elses(self, args):
+        return self.keywords["else"] + indent(args[0:])
+
+    def end_block(self, args):
+        return args
+
+
+@hedy_translator(level=9)
+class ConvertToLang9(ConvertToLang8):
+    def command(self, args):
+        return '\n'.join([str(c) for c in args])
+
+
+@hedy_translator(level=10)
+class ConvertToLang10(ConvertToLang9):
+    def repeat_list(self, args):
+        return self.keywords["for"] + " " + args[0] + " " + self.keywords["in"] + " " + args[1] + indent(args[2:])
+
+
+def indent(s):
+    newIndent = ""
+    for line in s:
+        lines = line.split('\n')
+        newIndent += ''.join(['\n    ' + l for l in lines])
+    return newIndent
+
+
+
