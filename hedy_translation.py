@@ -240,6 +240,14 @@ class ConvertToLang10(ConvertToLang9):
         return self.keywords["for"] + " " + args[0] + " " + self.keywords["in"] + " " + args[1] + indent(args[2:])
 
 
+@hedy_translator(level=11)
+@hedy_translator(level=12)
+class ConvertToLang11_12(ConvertToLang10):
+    def for_loop(self, args):
+        return self.keywords["for"] + " " + args[0] + " " + self.keywords["in"] + " " + \
+               self.keywords["range"] + args[1] + " " + self.keywords["to"] + " " + indent(args[2:])
+
+
 def indent(s):
     newIndent = ""
     for line in s:
