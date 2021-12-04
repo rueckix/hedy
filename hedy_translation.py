@@ -28,7 +28,6 @@ def translate_keywords(input_string, from_lang="en", to_lang="nl", level=1):
         input_string = hedy.preprocess_blocks(input_string, level)
     program_root = parser.parse(input_string + '\n').children[0]
 
-
     hedy.ExtractAST().transform(program_root)
     translator = TRANSPILER_LOOKUP[level]
     abstract_syntaxtree = translator(keywordDict, punctuation_symbols).transform(program_root)
@@ -132,7 +131,8 @@ class ConvertToLang2(ConvertToLang1):
         var = args[0]
         all_parameters = [hedy.process_characters_needing_escape(a) for a in args]
 
-        return all_parameters[0] + " " + self.keywords["is"] + " " + self.keywords["ask"] + " " + ''.join(all_parameters[1:])
+        return all_parameters[0] + " " + self.keywords["is"] + " " + self.keywords["ask"] + " " + ''.join(
+            all_parameters[1:])
 
     def ask_dep_2(self, args):
         return self.keywords["ask"] + " " + ''.join([str(c) for c in args])
@@ -160,7 +160,7 @@ class ConvertToLang3(ConvertToLang2):
 
 @hedy_translator(level=4)
 class ConvertToLang4(ConvertToLang3):
-    
+
     def print(self, args):
         i = 0
         #    self.check_args_type_allowed(args, 'print', self.level)
@@ -252,6 +252,7 @@ class ConvertToLang10(ConvertToLang9):
         return self.keywords["for"] + " " + args[0] + " " + self.keywords["in"] + " " + args[1] + indent(args[2:])
 
 
+
 @hedy_translator(level=11)
 @hedy_translator(level=12)
 class ConvertToLang11_12(ConvertToLang10):
@@ -266,4 +267,5 @@ def indent(s):
         lines = line.split('\n')
         newIndent += ''.join(['\n    ' + l for l in lines])
     return newIndent
+
 
