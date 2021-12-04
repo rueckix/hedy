@@ -16,6 +16,7 @@ def keywords_to_dict(to_lang="nl"):
 
     return command_combinations
 
+
 def translate_keywords(input_string, from_lang="en", to_lang="nl", level=1):
     """"Return code with keywords translated to language of choice in level of choice"""
     parser = hedy.get_parser(level, from_lang)
@@ -23,8 +24,12 @@ def translate_keywords(input_string, from_lang="en", to_lang="nl", level=1):
     punctuation_symbols = ['!', '?', '.']
 
     keywordDict = keywords_to_dict(to_lang)
+    if level > 7:
+        input_string = hedy.preprocess_blocks(input_string, level)
     program_root = parser.parse(input_string + '\n').children[0]
-    abstract_syntaxtree = hedy.ExtractAST().transform(program_root)
+
+
+    hedy.ExtractAST().transform(program_root)
     translator = TRANSPILER_LOOKUP[level]
     abstract_syntaxtree = translator(keywordDict, punctuation_symbols).transform(program_root)
 
@@ -215,6 +220,9 @@ class ConvertToLang7(ConvertToLang6):
 
 @hedy_translator(level=8)
 class ConvertToLang8(ConvertToLang7):
+    def command(self, args):
+        return '\n'.join([str(c) for c in args])
+
     def repeat(self, args):
         return self.keywords["repeat"] + " " + args[0] + " " + self.keywords["times"] + indent(args[1:])
 
@@ -224,18 +232,22 @@ class ConvertToLang8(ConvertToLang7):
     def elses(self, args):
         return self.keywords["else"] + indent(args[0:])
 
+    def equality_check(self, args):
+        return args[0] + " " + self.keywords["is"] + " " + " ".join([str(c) for c in args[1:]])
+
     def end_block(self, args):
         return args
 
 
 @hedy_translator(level=9)
 class ConvertToLang9(ConvertToLang8):
-    def command(self, args):
-        return '\n'.join([str(c) for c in args])
+    def end_block(self, args):
+        return args
 
 
 @hedy_translator(level=10)
 class ConvertToLang10(ConvertToLang9):
+
     def repeat_list(self, args):
         return self.keywords["for"] + " " + args[0] + " " + self.keywords["in"] + " " + args[1] + indent(args[2:])
 
@@ -246,6 +258,4 @@ def indent(s):
         lines = line.split('\n')
         newIndent += ''.join(['\n    ' + l for l in lines])
     return newIndent
-
-
 
