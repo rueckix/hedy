@@ -344,11 +344,6 @@ class ConvertToLang17(ConvertToLang16):
     def elifs(self, args):
         return self.keywords["elif"] + " " + args[0] + ":" + indent(args[1:])
 
-code = "fruit is ['appel', 'banaan', 'kers']\n" \
-               "print fruit[random]\n" \
 
-
-
-translate_keywords(code, level=16)
 
 
