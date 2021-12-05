@@ -35,6 +35,14 @@ def translate_keywords(input_string, from_lang="en", to_lang="nl", level=1):
     return abstract_syntaxtree
 
 
+def indent(s):
+    newIndent = ""
+    for line in s:
+        lines = line.split('\n')
+        newIndent += ''.join(['\n    ' + l for l in lines])
+    return newIndent
+
+
 def hedy_translator(level):
     def decorating(c):
         TRANSPILER_LOOKUP[level] = c
@@ -240,32 +248,107 @@ class ConvertToLang8(ConvertToLang7):
 
 
 @hedy_translator(level=9)
-class ConvertToLang9(ConvertToLang8):
-    def end_block(self, args):
-        return args
-
-
 @hedy_translator(level=10)
-class ConvertToLang10(ConvertToLang9):
+class ConvertToLang9_10(ConvertToLang8):
 
     def repeat_list(self, args):
         return self.keywords["for"] + " " + args[0] + " " + self.keywords["in"] + " " + args[1] + indent(args[2:])
 
 
-
 @hedy_translator(level=11)
-@hedy_translator(level=12)
-class ConvertToLang11_12(ConvertToLang10):
+class ConvertToLang11(ConvertToLang9_10):
     def for_loop(self, args):
         return self.keywords["for"] + " " + args[0] + " " + self.keywords["in"] + " " + \
-               self.keywords["range"] + args[1] + " " + self.keywords["to"] + " " + indent(args[2:])
+               self.keywords["range"] + " " + args[1] + " " + self.keywords["to"] + " " + args[2] + indent(args[3:])
 
 
-def indent(s):
-    newIndent = ""
-    for line in s:
-        lines = line.split('\n')
-        newIndent += ''.join(['\n    ' + l for l in lines])
-    return newIndent
+@hedy_translator(level=12)
+class ConvertToLang12(ConvertToLang11):
+
+    def text_in_quotes(self, args):
+        return ''.join(["'" + str(c) + "'" for c in args])
+
+
+@hedy_translator(level=13)
+class ConvertToLang13(ConvertToLang12):
+
+    def andcondition(self, args):
+        returnString = args[0]
+        for arg in args[1:]:
+            returnString += " " + self.keywords["and"] + " " + arg
+        return returnString
+
+    def orcondition(self, args):
+        returnString = args[0]
+        for arg in args[1:]:
+            returnString += " " + self.keywords["or"] + " " + arg
+        return returnString
+
+    def in_list_check(self, args):
+        return args[0] + " " + self.keywords["in"] + " " + ''.join([str(c) for c in args[1:]])
+
+@hedy_translator(level=14)
+class ConvertToLang14(ConvertToLang13):
+
+    def bigger(self, args):
+        return args[0] + " > " + args[1]
+
+    def smaller(self, args):
+        return args[0] + " < " + args[1]
+
+    def bigger_equal(self, args):
+        return args[0] + " >= " + args[1]
+
+    def smaller_equal(self, args):
+        return args[0] + " <= " + args[1]
+
+    def not_equal(self,args):
+        return args[0] + " != " + args[1]
+
+
+@hedy_translator(level=15)
+class ConvertToLang15(ConvertToLang14):
+
+    def while_loop(self, args):
+        return self.keywords["while"] + " " + args[0] + indent(args[1:])
+
+@hedy_translator(level=16)
+class ConvertToLang16(ConvertToLang15):
+
+    def assign_list(self, args):
+        return args[0] + " " + self.keywords["is"] + " [" + ', '.join([str(c) for c in args[1:]]) + "]"
+
+    def list_access(self, args):
+        return args[0] + "[" + ''.join([str(c) for c in args[1:]]) + "]"
+
+
+@hedy_translator(level=17)
+class ConvertToLang17(ConvertToLang16):
+
+    def for_loop(self, args):
+        return self.keywords["for"] + " " + args[0] + " " + self.keywords["in"] + " " + \
+               self.keywords["range"] + " " + args[1] + " " + self.keywords["to"] + " " + args[2] + ":" + indent(args[3:])
+
+    def while_loop(self, args):
+        return self.keywords["while"] + " " + args[0] + ":" + indent(args[1:])
+
+    def repeat_list(self, args):
+        return self.keywords["for"] + " " + args[0] + " " + self.keywords["in"] + " " + args[1] + ":" + indent(args[2:])
+
+    def ifs(self, args):
+        return self.keywords["if"] + " " + args[0] + ":" + indent(args[1:])
+
+    def elses(self, args):
+        return self.keywords["else"] + ":" + indent(args[0:])
+
+    def elifs(self, args):
+        return self.keywords["elif"] + " " + args[0] + ":" + indent(args[1:])
+
+code = "fruit is ['appel', 'banaan', 'kers']\n" \
+               "print fruit[random]\n" \
+
+
+
+translate_keywords(code, level=16)
 
 

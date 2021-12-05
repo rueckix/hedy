@@ -17,46 +17,27 @@ class TestsTranslationLevel11(HedyTester):
     keywords_to = hedy_translation.keywords_to_dict('nl')
 
     @check_local_lang_bool
-    def test_repeat_english_dutch(self):
-        code = "for counter in range 1 to 5\n   print counter"
+    def test_for_in_english_dutch(self):
+        code = "for counter in range 1 to 5\n" \
+               "    print counter"
 
         result = hedy_translation.translate_keywords(code, from_lang="en", to_lang="nl", level=self.level)
-        expected = "voor counter in bereik 1 tot 5\n   print counter"
+        expected = "voor counter in bereik 1 tot 5\n" \
+                   "    print counter"
 
         self.assertEqual(result, expected)
 
     @check_local_lang_bool
-    def test_repeat2_english_dutch(self):
-        code = "repeat 2 times print name"
-
-        result = hedy_translation.translate_keywords(code, from_lang="en", to_lang="nl", level=self.level)
-        expected = "herhaal 2 keer print name"
-
-        self.assertEqual(result, expected)
-
-    @check_local_lang_bool
-    def test_repeat_dutch_english(self):
-        code = "herhaal 3 keer print 'Hedy is fun!'"
+    def test_for_in_dutch_english(self):
+        code = "nummer is vraag 'hoe oud ben je'\n" \
+               "voor counter in bereik 1 tot 5\n" \
+               "    voor count in bereik nummer tot 0\n" \
+               "        print 'hoi' counter"
 
         result = hedy_translation.translate_keywords(code, from_lang="nl", to_lang="en", level=self.level)
-        expected = "repeat 3 times print 'Hedy is fun!'"
+        expected = "nummer is ask 'hoe oud ben je'\n" \
+                   "for counter in range 1 to 5\n" \
+                   "    for count in range nummer to 0\n" \
+                   "        print 'hoi' counter"
 
         self.assertEqual(result, expected)
-
-    @check_local_lang_bool
-    def test_repeat2_dutch_english(self):
-        code = "herhaal 2 keer print ask"
-
-        result = hedy_translation.translate_keywords(code, from_lang="nl", to_lang="en", level=self.level)
-        expected = "repeat 2 times print ask"
-
-        self.assertEqual(result, expected)
-
-    @check_local_lang_bool
-    def test_translate_back(self):
-        code ="repeat 4 times print 'Welcome to Hedy'"
-
-        result = hedy_translation.translate_keywords(code, from_lang="en", to_lang="nl", level=self.level)
-        result = hedy_translation.translate_keywords(result, from_lang="nl", to_lang="en", level=self.level)
-
-        self.assertEqual(code, result)
