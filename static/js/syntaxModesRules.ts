@@ -1,8 +1,15 @@
 import {LANG_en} from './syntaxLang-en';
+import {LANG_es} from './syntaxLang-es';
 import {LANG_nl} from './syntaxLang-nl';
 
+// A bunch of code expects a global "State" object. Set it here if not
+// set yet.
+if (!window.State) {
+window.State = {};
+}
+
 // Set this to true to use keywords from languages other than english
-var localKeywordsEnable = false;
+var localKeywordsEnable = true;
 
 // Contains the current keywords based on the current language
 var currentLang: { 
@@ -39,6 +46,9 @@ if(localKeywordsEnable){
   switch(window.State.lang){
     case 'nl':
       currentLang = LANG_nl;
+      break;
+    case 'es':
+      currentLang = LANG_es;
       break;
     default:
       currentLang = LANG_en;
