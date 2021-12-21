@@ -7,17 +7,20 @@
 		<div class="container">
           <!-- Responsive Arrow Progress Bar -->
           <div class="arrow-steps clearfix">
-              <div class="step check"><span><i class="fas fa-check"></i></span></div>
-              <div class="step incorrect"><span><i class="fas fa-times"></i></span></div>
-              <div class="step check"><span><i class="fas fa-check"></i></span></div>
-              <div class="step current"><span><a class="step-text" href="#">Vraag 4<br>Poging 2</a></span></div>
-              <div class="step"><span><a class="step-text" href="#">5</a></span></div>
-              <div class="step"><span><a class="step-text" href="#">6</a></span></div>
-              <div class="step"><span><a class="step-text" href="#">7</a></span></div>
-              <div class="step"><span><a class="step-text" href="#">8</a></span></div>
-              <div class="step"><span><a class="step-text" href="#">9</a></span></div>
-              <div class="step"><span><a class="step-text" href="#">10</a></span></div>
-          </div>
+              {% for i in range(questions|length)%}
+                   {% if i + 1 == question_nr %}
+                    <div class="step current"><span><a class="step-text" href="#">Vraag {{ i + 1 }}<br>Poging {{ attempt }}</a></span></div>
+                   {% elif quiz_answers[i + 1] and quiz_answers[i + 1][0] and quiz_answers[i + 1][-1] != questions[i + 1].correct_answer %}
+                       {{  quiz_answers}} correct{{ questions[i + 1].correct_answer }}
+                       <div class="step incorrect"><span><i class="fas fa-times"></i>{{ i + 1 }}</span></div>
+                   {% elif quiz_answers[i + 1] and quiz_answers[i + 1][0]  and quiz_answers[i + 1][-1] == questions[i + 1].correct_answer %}
+                       {{  quiz_answers}} correct{{ questions[i + 1].correct_answer }}
+                       <div class="step check"><span><i class="fas fa-check"></i>{{ i + 1 }}</span></div>
+                   {% elif not quiz_answers[i + 1] %}
+                       <div class="step"><span><a class="step-text" href="#">{{ i + 1 }}</a></span></div>
+                       {{ quiz_answers }} correct {{ questions[i + 1].correct_answer }}
+                   {% endif %}
+              {% endfor %}
         </div>
 {% block question %}{% endblock %}
 
