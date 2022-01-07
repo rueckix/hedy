@@ -13,9 +13,11 @@
             function changeHint() {
                 const btn = document.getElementById("hint-button");
                 if (btn.innerText === "{{ ui.hint }}") {
-                    btn.innerText = document.getElementById('hidden-hint').textContent;
+                    btn.innerHTML = "<i>" + document.getElementById('hidden-hint').textContent + "</i>";
+                    $('#hint-button').css('background-color', 'rgba(190,227,248,0.33)');
                 } else {
                     btn.innerText = "{{ ui.hint }}";
+                    $('#hint-button').css('background-color', '#bee3f8');
                 }
             }
 
