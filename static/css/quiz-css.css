@@ -78,9 +78,8 @@ input:disabled{
     margin-left: 0.75rem;
 }
 
-#hint-button{
+#hint-button {
     background-color: #bee3f8;
     color: #1a202c;
-    border: 3px solid #3182ce!important;
-    outline-color: #3182ce!important;
+    border: 2.5px solid #3182ce;
 }

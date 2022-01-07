@@ -14,10 +14,13 @@
                 const btn = document.getElementById("hint-button");
                 if (btn.innerText === "{{ ui.hint }}") {
                     btn.innerHTML = "<i>" + document.getElementById('hidden-hint').textContent + "</i>";
-                    $('#hint-button').css('background-color', 'rgba(190,227,248,0.33)');
+                    $('#hint-button').css('background-color', 'rgba(198,246,213,0.51)');
+                    $('#hint-button').css('border', '2.5px solid #2d9068');
                 } else {
                     btn.innerText = "{{ ui.hint }}";
                     $('#hint-button').css('background-color', '#bee3f8');
+                    $('#hint-button').css('border', '2.5px solid #3182ce');
+                    $('#hint-button').css('outline', '#3182ce');
                 }
             }
 
