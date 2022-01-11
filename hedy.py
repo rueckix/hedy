@@ -2016,7 +2016,7 @@ def parse_input(input_string, level, lang):
 def is_program_valid(program_root, input_string, level, lang):
     # IsValid returns (True,) or (False, args)
     instance = IsValid()
-    instance.level = level # could be done in a constructor once we are sure we will go this way
+    instance.level = level # TODO, FH dec 2021: could be done in a constructor once we are sure we will go this way
     is_valid = instance.transform(program_root)
 
     if not is_valid[0]:

@@ -90,7 +90,6 @@ class TestsLevel4(HedyTester):
 
     self.single_level_tester(code, exception=hedy.exceptions.UnquotedTextException)
 
-
   def test_ask_with_list_var(self):
     code = textwrap.dedent("""\
     colors is orange, blue, green
@@ -224,14 +223,6 @@ class TestsLevel4(HedyTester):
       code=code,
       expected=expected
     )
-
-
-  # negative tests
-  def test_print_without_quotes(self):
-    with self.assertRaises(hedy.exceptions.UnquotedTextException) as context:
-      result = hedy.transpile("print felienne 123", self.level)
-
-    self.assertEqual('Unquoted Text', context.exception.error_code)  # hier moet nog we een andere foutmelding komen!
 
   #combined tests
   def test_assign_print_bengali(self):
@@ -384,7 +375,29 @@ class TestsLevel4(HedyTester):
 
     self.assertEqual("print 'Hello'", context.exception.fixed_code)
 
+  def test_print_without_quotes(self):
+    with self.assertRaises(hedy.exceptions.UnquotedTextException) as context:
+      result = hedy.transpile("print felienne 123", self.level)
 
+    self.assertEqual('Unquoted Text', context.exception.error_code)  # hier moet nog we een andere foutmelding komen!
+
+  def test_meta_column(self):
+    code = textwrap.dedent("""\
+    print 'Hello'
+    print 'World""")
+
+    instance = hedy.IsValid()
+    instance.level = self.level
+    program_root = hedy.parse_input(code, self.level, 'en')
+    is_valid = instance.transform(program_root)
+    _, invalid_info = is_valid
+
+    invalid_info = invalid_info[0]
+
+    line = invalid_info.line
+    column = invalid_info.column
+    self.assertEqual(2, line)
+    self.assertEqual(1, column)
 
   #assorti
   def test_detect_accented_chars(self):
