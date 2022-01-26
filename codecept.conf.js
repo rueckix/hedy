@@ -18,7 +18,17 @@ exports.config = {
     I: './steps_file.js'
   },
   bootstrap: null,
-  mocha: {},
+  mocha: {  "reporterOptions": {
+      "mochaFile": "output/result.xml",
+      "codeceptjs-cli-reporter": {
+        "stdout": "-",
+        "options": {
+          "verbose": true,
+          "steps": true
+        }
+      }
+    }
+  },
   name: 'hedy',
   plugins: {
     pauseOnFail: {},
