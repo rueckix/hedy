@@ -27,8 +27,6 @@ Scenario(
 
         });
 
-              //I.seeInCurrentUrl('/hedy?lang=eng#end')
-
           I.click('input.green-btn')
           I.switchTo('iframe');
           I.saveScreenshot('debug')
@@ -39,9 +37,11 @@ Scenario(
 
           I.click('button.green-btn')
 
-
+          I.seeElement({xpath: '/html/body/div[3]/p'}) // check if the question text is visible
+          I.see('Hint?', {css: '#hint-button'})
+          I.click('#hint-button')
+          I.dontSee('Hint?', {css: '#hint-button'})
       })
-
 
   }
 )
