@@ -12,6 +12,19 @@ class TestsLevel5(HedyTester):
   # is
 
 
+  def test_print_var_1795(self):
+    code = textwrap.dedent("""\
+    naam is 'Daan'
+    woord1 is zomerkamp
+    print 'naam' ' is naar het' 'woord1'""")
+
+    expected = textwrap.dedent("""\
+    naam = '\\'Daan\\''
+    woord1 = 'zomerkamp'
+    print(f'naam is naar hetwoord1')""")
+
+    self.single_level_tester(code=code, expected=expected)
+
   def test_assign_list_multiple_spaces(self):
     code = textwrap.dedent("""\
     dieren is Hond,  Kat,       Kangoeroe
@@ -266,7 +279,7 @@ class TestsLevel5(HedyTester):
       print(f'found!')""")
 
     #todo: whould be tested for higher levels too (FH, dec 21)
-    self.single_level_tester(code=code, expected=expected, output='found!')
+    self.single_level_tester(code=code, expected=expected, output='found!', expected_commands=['is', 'is', 'if', 'in', 'print'])
 
   def test_undefined_list_if_in_list(self):
     code = textwrap.dedent("""\
@@ -411,3 +424,22 @@ class TestsLevel5(HedyTester):
   #     if নাম is হেডি print 'ভালো!' else print 'মন্দ'\"""")
   #
   #
+
+  def test_meta_column_missing_quote(self):
+    code = textwrap.dedent("""\
+        name is ask 'what is your name?'
+        if name is Hedy print nice' else print 'boo!'""")
+
+    instance = hedy.IsValid()
+    instance.level = self.level
+    program_root = hedy.parse_input(code, self.level, 'en')
+    is_valid = instance.transform(program_root)
+    _, invalid_info = is_valid
+
+    invalid_info = invalid_info[0]
+
+    line = invalid_info.line
+    column = invalid_info.column
+
+    self.assertEqual(2, line)
+    self.assertEqual(23, column)
