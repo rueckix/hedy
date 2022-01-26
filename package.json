@@ -24,6 +24,6 @@
   "dependencies": {
     "chart.js": "^3.6.2",
     "codeceptjs": "^3.2.3",
-    "playwright": "^1.17.2"
+    "playwright": "^1.18.0"
   }
 }
