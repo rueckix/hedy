@@ -1,12 +1,15 @@
 Feature('quiz start');
 
+//use preferred browser language (navigator.locale) to redirect the url, en -> /'
+Before(({ I }) => { // or Background
+   I.amOnPage('https://hedy-beta.herokuapp.com/hedy?lang=nl#end')
+
+});
 
 Scenario(
-  'use preferred browser language (navigator.locale) to rediect the url, en -> /',
+  'Change the language of of the Hedy site from Dutch to English',
   ({I}) => {
-
-     I.amOnPage('https://hedy-beta.herokuapp.com/hedy?lang=nl#end')
-    // switch browser to english localizaton
+          // switch browser to english localizaton
     // set browser local to english
     session(
       'english browser',
@@ -26,21 +29,6 @@ Scenario(
     console.log(result);
 
         });
-
-          I.click('input.green-btn')
-          I.switchTo('iframe');
-          I.saveScreenshot('debug')
-          I.seeElement({css: '.center-picture'})
-          I.see( 'Start quiz',{css: '.start-quiz-title'});
-          I.see('Level 1', {css: '.start-quiz-subtitle'})
-          I.see('Go to question 1', {css: 'button.green-btn'})
-
-          I.click('button.green-btn')
-
-          I.seeElement({xpath: '/html/body/div[3]/p'}) // check if the question text is visible
-          I.see('Hint?', {css: '#hint-button'})
-          I.click('#hint-button')
-          I.dontSee('Hint?', {css: '#hint-button'})
       })
 
   }

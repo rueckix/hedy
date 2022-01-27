@@ -11,7 +11,7 @@ exports.config = {
     Playwright: {
       url: 'http://127.0.0.1:8080',
       show: true,
-      browser: 'chromium'
+      browser: 'chromium',
     }
   },
   include: {
@@ -41,5 +41,9 @@ exports.config = {
     screenshotOnFail: {
       enabled: true
     }
-  }
+  },
+   include: {
+    LanguagePicker: './e2e_tests/language_picker_page.js'
+  },
 }
+
