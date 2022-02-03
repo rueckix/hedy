@@ -1,49 +1,52 @@
-const { setHeadlessWhen } = require('@codeceptjs/configure');
-
-// turn on headless mode when running with HEADLESS=true environment variable
-// export HEADLESS=true && npx codeceptjs run
-setHeadlessWhen(process.env.HEADLESS);
-
 exports.config = {
-  tests: 'e2e_tests/*_test.js',
-  output: 'e2e_tests',
+  output: 'e2e_tests/output',
   helpers: {
     Playwright: {
-      url: 'http://127.0.0.1:8080',
       show: true,
       browser: 'chromium',
+      restart: false,
+      manualStart:true,
+      keepBrowserState: true,
+      keepCookies: true,
+    },
+    LanguagePickerHelper:{
+         require:  './e2e_tests/helper/language_picker.helper.js',
     }
   },
   include: {
-    I: './steps_file.js'
+    I: './e2e_tests/steps_file.js'
   },
+  mocha: {},
   bootstrap: null,
-  mocha: {  "reporterOptions": {
-      "mochaFile": "output/result.xml",
-      "codeceptjs-cli-reporter": {
-        "stdout": "-",
-        "options": {
-          "verbose": true,
-          "steps": true
-        }
-      }
-    }
+  timeout: null,
+  teardown: null,
+  hooks: [],
+  gherkin: {
+    features: './e2e_tests/features/*.feature',
+    steps: ['./e2e_tests/step_definitions/steps.js']
   },
-  name: 'hedy',
   plugins: {
+    screenshotOnFail: {
+      enabled: true
+    },
     pauseOnFail: {},
     retryFailedStep: {
       enabled: true
     },
     tryTo: {
       enabled: true
-    },
-    screenshotOnFail: {
-      enabled: true
     }
   },
-   include: {
-    LanguagePicker: './e2e_tests/language_picker_page.js'
-  },
+  stepTimeout: 0,
+  stepTimeoutOverride: [{
+      pattern: 'wait.*',
+      timeout: 0
+    },
+    {
+      pattern: 'amOnPage',
+      timeout: 0
+    }
+  ],
+  tests: 'e2e_tests/tests/*_test.js',
+  name: 'hedy'
 }
-
