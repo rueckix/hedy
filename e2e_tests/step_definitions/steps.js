@@ -69,7 +69,7 @@ When('I answer the question in several attempts', async (table) => {
 
     });*/
 
-    let contexts = await I.grabAllContexts();
+
     I.switchTo('iframe')
      for (const id in table.rows) {
         if (id < 1) {
