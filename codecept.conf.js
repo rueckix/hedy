@@ -3,19 +3,21 @@ exports.config = {
   helpers: {
     Playwright: {
       show: true,
-      browser: 'chromium',
       restart: false,
-      manualStart:true,
       keepBrowserState: true,
       keepCookies: true,
+      chromium:{
+        userDataDir: '/tmp/playwright-tmp', // necessary to launch the browser in normal mode instead of incognito,
+      }
     },
-    LanguagePickerHelper:{
-         require:  './e2e_tests/helper/language_picker.helper.js',
-    }
+      LanguagePickerHelper:{
+      require: './e2e_tests/helper/language_picker.helper.js'
+      }
   },
   include: {
     I: './e2e_tests/steps_file.js'
   },
+
   mocha: {},
   bootstrap: null,
   timeout: null,

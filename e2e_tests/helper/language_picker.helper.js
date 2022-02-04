@@ -1,18 +1,27 @@
 const Helper = require('@codeceptjs/helper');
 const { chromium} = require('playwright');
+playwright = require('playwright');
 
-/*let hedyBrowser;
-let context;*/
 
 class LanguagePickerHelper extends Helper {
+
+
+  /*  async _startBrowser() {
+
+       let browser = await chromium.launch({headless: false });
+      return await chromium.launchPersistentContext('/tmp/playwright-tmp');
+  }*/
 
     // before/after hooks
     /**
      * @protected
      */
     async _init() {
-
-        const browser = await chromium.launch( {headless: false });
+//
+       const browser = await chromium.launch( {headless: false });
+        //const browser = this._startBrowser()
+        //const chromium = await playwright['chromium'];
+       // const context = await chromium.launchPersistentContext('/tmp/playwright-tmp', { headless: false, locale: 'nl-NL' });
         const context = await browser.newContext({
             locale: 'nl-NL'
         });
@@ -59,5 +68,7 @@ class LanguagePickerHelper extends Helper {
     // use: this.helpers['helperName']
 
 }
+
+
 
 module.exports = LanguagePickerHelper;
