@@ -1,17 +1,52 @@
 [
   {
-  "question": "What's this programming language called?",
-  "code": "none",
-  "correct_answer": "A",
-  "question_score": 10,
-  "attempt": "B,C,D"
+    "question_text": "What's this programming language called?",
+    "code": "...",
+    "mp_choice_options": [
+          {
+            "option_text": "Hedy",
+            "feedback": "Good job!"
+          },
+          {
+            "option_text": "Heddy",
+            "feedback": "Not this one!"
+          },
+          {
+            "option_text": "Haydie",
+            "feedback": "Not this one!"
+          },
+          {
+            "option_text": "Heidi",
+            "feedback": "Not this one!"
+          }
+        ],
+    "hint": "It's named after Hedy Lamarr.",
+    "question_score": 10,
+    "attempt": "B,C,D"
   },
   {
-    "question": "Which command makes text appear?",
-    "code": "none",
-    "correct_answer": "C",
-    "question_score": 10,
-    "attempt": "C"
+     "mp_choice_options": [
+          {
+            "code": "echo",
+            "feedback": "Echo repeats a given answer."
+          },
+          {
+            "code": "print",
+            "feedback": "Correct!"
+          },
+          {
+            "code": "hello",
+            "feedback": "Hello isn't a command."
+          },
+          {
+            "code": "ask",
+            "feedback": "With ask, you can ask a question."
+          }
+        ],
+        "correct_answer": "B",
+        "hint": "(?) Hello world! ",
+        "question_score": 10,
+        "attempt": "C"
   }
 ]
 

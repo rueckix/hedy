@@ -36,8 +36,8 @@ describe('Quiz navigation', () => {
             for (const question of quiz_data) {
                 expect(quiz_data).to.be.an('array').and.to.have.have.length(2)
                 cy.switchToIframe('#quiz-iframe').find('div > p').contains(question['question'])
-                cy.switchToIframe('#quiz-iframe').find('p.option-text').contains('Heddy').click()
-                cy.switchToIframe('#quiz-iframe').find('[name="submit-button"]').contains('Answer question 1').focused().click()
+                cy.switchToIframe('#quiz-iframe').find('.option-block').contains('Heddy').click()
+                cy.switchToIframe('#quiz-iframe').find('[value="B"]').contains('Answer question 1').click()
                 cy.screenshot()
             }
         })
