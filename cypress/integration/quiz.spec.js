@@ -33,12 +33,18 @@ describe('Quiz navigation', () => {
         cy.switchToIframe('#quiz-iframe').find('div.p-10.button-bar.border-t-8.border-green-600 > button.green-btn').should('have.text', '\n                Go to question 1\n            ').click()
         cy.screenshot()
         cy.get('@quiz_data').then((quiz_data) => {
+            let q_nr = 1
             for (const question of quiz_data) {
                 expect(quiz_data).to.be.an('array').and.to.have.have.length(2)
-                cy.switchToIframe('#quiz-iframe').find('div > p').contains(question['question'])
-                cy.switchToIframe('#quiz-iframe').find('.option-block').contains('Heddy').click()
-                cy.switchToIframe('#quiz-iframe').find('[value="B"]').contains('Answer question 1').click()
+                cy.switchToIframe('#quiz-iframe').find('div > p').contains(question['question_text'])
+
+                cy.switchToIframe('#quiz-iframe').find('.option-block').contains(question['mp_choice_options'][1]['option_text']).click()
+                cy.switchToIframe('#quiz-iframe').find('[value="B"]').contains(`Answer question ${q_nr}`).click()
+
+              /*  cy.switchToIframe('#quiz-iframe').find('.option-block').contains('Heddy').click()
+                cy.switchToIframe('#quiz-iframe').find('[value="B"]').contains('Answer question 1').click()*/
                 cy.screenshot()
+                q_nr++;
             }
         })
     })
