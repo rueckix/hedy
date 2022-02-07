@@ -1,18 +1,13 @@
 const allQuizData = require('../fixtures/quiz_data.json')
-const {iframe} = require('../support/commands.js')
-/*
-const getIframeBody = () => {
-    // get the iframe > document > body
-    // and retry until the body element is not empty
-    return cy
-        .get('iframe[id="quiz-iframe"]')
-        .its('0.contentDocument.body').should('not.be.empty')
-        // wraps "body" DOM element to allow
-        // chaining more Cypress commands, like ".find(...)"
-        // https://on.cypress.io/wrap
-        .then(cy.wrap)
+
+function convertIndexToChar(index){
+    return String.fromCharCode(index+65)
 }
-*/
+
+function convertCharToIndex(char){
+    return char.charCodeAt(0)-65;
+}
+
 
 // sanity check
 expect(allQuizData, 'list of quiz questions').to.be.an('array')
@@ -24,26 +19,39 @@ describe('Quiz navigation', () => {
     })
 
 
-
-
     it('Iterates over the questions', () => {
-        cy.visit('https://hedy-beta.herokuapp.com/hedy')
+        cy.visit('http://127.0.0.1:8080/hedy', {
+            onBeforeLoad(win) {
+                Object.defineProperty(win.navigator, 'language', {
+                    value: 'en-US'
+                })
+            }
+        }) .its('navigator.language') // yields window.navigator.language
+          .should('equal', 'en-US') // asserts the expected value
+
         cy.get('div[data-tab="end"]').click()
-        cy.get('#adventures-tab > div:nth-child(10) > div > div > input').should('have.value', 'Go to quiz').click()
-        cy.switchToIframe('#quiz-iframe').find('div.p-10.button-bar.border-t-8.border-green-600 > button.green-btn').should('have.text', '\n                Go to question 1\n            ').click()
+        cy.get('input#goto-quiz-btn').contains('Go to quiz').click()
+        cy.switchToIframe('#quiz-iframe').find('button#start-quiz-btn').contains('Go to question 1').click()
+
         cy.screenshot()
         cy.get('@quiz_data').then((quiz_data) => {
             let q_nr = 1
             for (const question of quiz_data) {
-                expect(quiz_data).to.be.an('array').and.to.have.have.length(2)
-                cy.switchToIframe('#quiz-iframe').find('div > p').contains(question['question_text'])
+                let attempt_nr = 0;
+                const attempt_array = question['attempt'].split(',')
+                for(const attempt of attempt_array) {
+                    let attempt_index = convertCharToIndex(attempt)
+                    expect(attempt_array).to.be.an('array').to.have.length.of.at.most(6) // the number of options can't be bigger than 6
+                    cy.switchToIframe('#quiz-iframe').find('#question-text').contains(question['question_text'])
+                    cy.switchToIframe('#quiz-iframe').find(`.option-block.option-${attempt}`).contains(question['mp_choice_options'][attempt_index]['option_text']).click()
 
-                cy.switchToIframe('#quiz-iframe').find('.option-block').contains(question['mp_choice_options'][1]['option_text']).click()
-                cy.switchToIframe('#quiz-iframe').find('[value="B"]').contains(`Answer question ${q_nr}`).click()
-
-              /*  cy.switchToIframe('#quiz-iframe').find('.option-block').contains('Heddy').click()
-                cy.switchToIframe('#quiz-iframe').find('[value="B"]').contains('Answer question 1').click()*/
-                cy.screenshot()
+                    if(attempt_nr < 2) // max 3 attempts for each question
+                        cy.switchToIframe('#quiz-iframe').find(`[value="${attempt}"]`).contains(`Answer question ${q_nr}`).click()
+                    else
+                        cy.switchToIframe('#quiz-iframe').find(`[value="${attempt}"]`).contains(`Go to answer`).click() // for the last attempt
+                    cy.screenshot()
+                    attempt_nr++;
+                }
                 q_nr++;
             }
         })
