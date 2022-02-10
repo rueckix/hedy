@@ -19,7 +19,8 @@
     "pajv": "^1.2.0",
     "tailwindcss": "^3.0.13",
     "typescript": "^4.4.3",
-    "yaml": "1.10.2"
+    "yaml": "1.10.2",
+    "yamljs": "^0.3.0"
   },
   "license": "ISC",
   "dependencies": {
